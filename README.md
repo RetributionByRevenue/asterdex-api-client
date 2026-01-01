@@ -7,7 +7,9 @@ A simple Python client to interact with the Asterdex Futures API, as documented 
 -   **Easy-to-use Class**: A `AsterdexClient` class that encapsulates API interaction logic.
 -   **Secure Key Management**: Uses a `.env` file to keep your API keys out of the source code.
 -   **HMAC-SHA256 Signing**: Automatically handles the creation of signatures for authenticated endpoints.
--   **Public Endpoints**: Example for accessing public data like server time.
+-   **Public Endpoints**: Examples for accessing public data:
+    -   Get Server Time (`GET /fapi/v1/time`)
+    -   Get Kline/Candlestick Data (`GET /fapi/v1/klines`)
 -   **Signed Endpoints**: Examples for accessing user-specific data and performing trading actions:
     -   Get Account Information (`GET /fapi/v2/account`)
     -   Get Position Information (`GET /fapi/v2/positionRisk`)
@@ -50,9 +52,9 @@ To run the script and see the examples in action, execute it from your terminal:
 python asterdex_client.py
 ```
 
-By default, the script will only run the public request to get the server time. The signed requests are commented out for safety.
+By default, the script will run public requests and show examples for signed requests. The signed actions that create or change data are commented out for safety.
 
-To test the signed endpoints, you must first add your API keys to the `.env` file and then uncomment the relevant sections in the `if __name__ == '__main__':` block at the bottom of the script.
+To test the signed endpoints, you must first add your API keys to the `.env` file.
 
 ### Example Output
 
@@ -62,6 +64,13 @@ When you run the script with valid API keys, you can expect output similar to th
 --- Getting Server Time ---
 Server time: 1767255000000
 ------------------------- 
+
+--- Getting Kline/Candlestick Data ---
+Attempting to get 500 1-hour candles for BTCUSDT...
+Successfully retrieved 500 klines.
+Last kline close time: 2026-01-01 12:00:00
+Last kline close price: 87500.50
+-------------------------
 
 --- Getting Account Information ---
 Successfully retrieved account information:
@@ -79,7 +88,7 @@ This is a live trading action and is commented out by default.
 --- Getting Position Information ---
 Attempting to get position information for all symbols...
 Found 1 active position(s):
-  - Symbol: BTCUSDT, Amount: 0.001, Entry Price: 40000.0, Side: LONG
+  - Symbol: BTCUSDT, Amount: 0.001, Entry Price: 86000.0, Side: LONG
 ------------------------- 
 ```
 
@@ -88,6 +97,7 @@ Found 1 active position(s):
 The `AsterdexClient` class includes the following methods:
 
 -   `get_server_time()`: Fetches the exchange's current server time.
+-   `get_klines(...)`: Fetches OHLC candlestick data.
 -   `get_account_info()`: Fetches your account balance and information. (Signed)
 -   `get_position_information()`: Fetches your current position data. (Signed)
 -   `change_leverage(symbol, leverage)`: Sets the leverage for a given symbol. (Signed)
