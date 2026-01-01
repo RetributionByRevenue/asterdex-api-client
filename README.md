@@ -5,10 +5,12 @@ A simple Python client to interact with the Asterdex Futures API, as documented 
 ## Features
 
 -   **Easy-to-use Class**: A `AsterdexClient` class that encapsulates API interaction logic.
+-   **Secure Key Management**: Uses a `.env` file to keep your API keys out of the source code.
 -   **HMAC-SHA256 Signing**: Automatically handles the creation of signatures for authenticated endpoints.
 -   **Public Endpoints**: Example for accessing public data like server time.
 -   **Signed Endpoints**: Examples for accessing user-specific data and performing trading actions:
     -   Get Account Information (`GET /fapi/v2/account`)
+    -   Get Position Information (`GET /fapi/v2/positionRisk`)
     -   Change Initial Leverage (`POST /fapi/v1/leverage`)
     -   Create New Order (`POST /fapi/v1/order`)
 
@@ -16,6 +18,7 @@ A simple Python client to interact with the Asterdex Futures API, as documented 
 
 -   Python 3.x
 -   `requests` library
+-   `python-dotenv` library
 
 ## Installation & Setup
 
@@ -23,22 +26,21 @@ A simple Python client to interact with the Asterdex Futures API, as documented 
     Download or clone the `asterdex_client.py` file.
 
 2.  **Install dependencies:**
-    Open your terminal and install the `requests` library.
+    Open your terminal and install the required libraries.
     ```bash
-    pip install requests
+    pip install requests python-dotenv
     ```
 
 3.  **Configure API Keys:**
-    Open the `asterdex_client.py` file and replace the placeholder values for `API_KEY` and `SECRET_KEY` with your actual keys from Asterdex.
+    Create a file named `.env` in the same directory as the script. Add your API Key and Secret Key to this file.
 
-    ```python
-    # in asterdex_client.py
-    if __name__ == '__main__':
-        # --- IMPORTANT ---
-        # Replace with your actual API Key and Secret Key
-        API_KEY = "YOUR_API_KEY"
-        SECRET_KEY = "YOUR_SECRET_KEY"
+    **`.env` file structure:**
     ```
+    # Your Asterdex API credentials
+    API_KEY="YOUR_API_KEY"
+    SECRET_KEY="YOUR_SECRET_KEY"
+    ```
+    The script will automatically load these keys. A `.gitignore` file is included to prevent you from accidentally committing your keys.
 
 ## Usage
 
@@ -48,29 +50,36 @@ To run the script and see the examples in action, execute it from your terminal:
 python asterdex_client.py
 ```
 
-By default, the script will only run the public request to get the server time. The signed requests (getting account info, changing leverage, creating an order) are commented out for safety.
+By default, the script will only run the public request to get the server time. The signed requests are commented out for safety.
 
-To test the signed endpoints, you must first add your API keys and then uncomment the relevant sections in the `if __name__ == '__main__':` block at the bottom of the file.
+To test the signed endpoints, you must first add your API keys to the `.env` file and then uncomment the relevant sections in the `if __name__ == '__main__':` block at the bottom of the script.
 
 ### Example Output
 
+When you run the script with valid API keys, you can expect output similar to the following (values are for demonstration purposes):
+
 ```
 --- Getting Server Time ---
-Server time: 1672531200000
+Server time: 1767255000000
 ------------------------- 
 
 --- Getting Account Information ---
-Please replace 'YOUR_API_KEY' and 'YOUR_SECRET_KEY' with your actual keys.
+Successfully retrieved account information:
+{'canTrade': True, 'totalWalletBalance': '152.50', 'totalUnrealizedProfit': '2.50', 'assets': [{'asset': 'USDT', 'walletBalance': '152.50', 'unrealizedProfit': '2.50'}]}
 ------------------------- 
 
 --- Changing Leverage (Example) ---
 This is a real trading action.
-Please provide valid API keys to change leverage.
 ------------------------- 
 
 --- Creating a New Order (Example) ---
 This is a live trading action and is commented out by default.
-Please provide valid API keys to create an order.
+------------------------- 
+
+--- Getting Position Information ---
+Attempting to get position information for all symbols...
+Found 1 active position(s):
+  - Symbol: BTCUSDT, Amount: 0.001, Entry Price: 40000.0, Side: LONG
 ------------------------- 
 ```
 
@@ -79,7 +88,8 @@ Please provide valid API keys to create an order.
 The `AsterdexClient` class includes the following methods:
 
 -   `get_server_time()`: Fetches the exchange's current server time.
--   `get_account_info()`: Fetches your account balance and position information. (Signed)
+-   `get_account_info()`: Fetches your account balance and information. (Signed)
+-   `get_position_information()`: Fetches your current position data. (Signed)
 -   `change_leverage(symbol, leverage)`: Sets the leverage for a given symbol. (Signed)
 -   `create_order(...)`: Places a new order on the exchange. (Signed)
 
