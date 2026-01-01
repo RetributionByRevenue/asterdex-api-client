@@ -3,9 +3,14 @@ import time
 import hmac
 import hashlib
 from urllib.parse import urlencode
+import os
+from dotenv import load_dotenv
 
-# This script requires the 'requests' library.
-# You can install it by running: pip install requests
+# Load environment variables from .env file
+load_dotenv()
+
+# This script requires the 'requests' and 'python-dotenv' libraries.
+# You can install them by running: pip install requests python-dotenv
 
 class AsterdexClient:
     """
@@ -145,12 +150,30 @@ class AsterdexClient:
         
         return self._make_request('POST', '/fapi/v1/order', params=params, signed=True)
 
+    def get_position_information(self, symbol=None):
+        """
+        Gets current position information.
+        This is a signed USER_DATA endpoint.
+
+        Args:
+            symbol (str, optional): The trading symbol (e.g., 'BTCUSDT'). 
+                                    If None, information for all positions is returned.
+
+        Returns:
+            list: A list of position information.
+        """
+        params = {}
+        if symbol:
+            params['symbol'] = symbol
+        
+        return self._make_request('GET', '/fapi/v2/positionRisk', params=params, signed=True)
+
 
 if __name__ == '__main__':
     # --- IMPORTANT ---
-    # Replace with your actual API Key and Secret Key
-    API_KEY = "YOUR_API_KEY"
-    SECRET_KEY = "YOUR_SECRET_KEY"
+    # Load API keys from .env file
+    API_KEY = os.getenv("API_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY")
 
     # Create a client instance
     # For public endpoints, you don't need to provide keys
@@ -168,10 +191,10 @@ if __name__ == '__main__':
 
 
     # --- Example 2: Get Account Info (Signed GET request) ---
-    # This will fail if you don't provide valid keys.
+    # This will fail if you don't provide valid keys in your .env file.
     print("--- Getting Account Information ---")
-    if API_KEY == "YOUR_API_KEY" or SECRET_KEY == "YOUR_SECRET_KEY":
-        print("Please replace 'YOUR_API_KEY' and 'YOUR_SECRET_KEY' with your actual keys.")
+    if not API_KEY or not SECRET_KEY or API_KEY == "YOUR_API_KEY":
+        print("Please set your 'API_KEY' and 'SECRET_KEY' in the .env file.")
     else:
         account_info = signed_client.get_account_info()
         if account_info:
@@ -184,8 +207,8 @@ if __name__ == '__main__':
     print("--- Changing Leverage (Example) ---")
     # This is a real trading action.
     # To use it, uncomment the lines below.
-    # if API_KEY == "YOUR_API_KEY" or SECRET_KEY == "YOUR_SECRET_KEY":
-    #     print("Please provide valid API keys to change leverage.")
+    # if not API_KEY or not SECRET_KEY or API_KEY == "YOUR_API_KEY":
+    #     print("Please set your API keys in the .env file to change leverage.")
     # else:
     #     try:
     #         print("Attempting to change leverage for BTCUSDT to 20x...")
@@ -202,15 +225,12 @@ if __name__ == '__main__':
 
 
     # --- Example 4: Create a New Order (Signed POST request) ---
-    # This is a real trading action. Be very careful.
-    # It is commented out by default to prevent accidental orders.
-    # To use it, uncomment the lines below and fill in the details.
     print("--- Creating a New Order (Example) ---")
     print("This is a live trading action and is commented out by default.")
     
     # UNCOMMENT THE FOLLOWING LINES TO CREATE A REAL ORDER
-    # if API_KEY == "YOUR_API_KEY" or SECRET_KEY == "YOUR_SECRET_KEY":
-    #     print("Please provide valid API keys to create an order.")
+    # if not API_KEY or not SECRET_KEY or API_KEY == "YOUR_API_KEY":
+    #     print("Please set your API keys in the .env file to create an order.")
     # else:
     #     try:
     #         print("Attempting to create a new LIMIT BUY order...")
@@ -227,4 +247,31 @@ if __name__ == '__main__':
     #             print(order_response)
     #     except Exception as e:
     #         print(f"An error occurred while creating the order: {e}")
+    print("-" * 25, "\n")
+
+    # --- Example 5: Get Position Information (Signed GET request) ---
+    print("--- Getting Position Information ---")
+    if not API_KEY or not SECRET_KEY or API_KEY == "YOUR_API_KEY":
+        print("Please set your API keys in the .env file to get position information.")
+    else:
+        try:
+            print("Attempting to get position information for all symbols...")
+            positions = signed_client.get_position_information()
+            if positions is not None:
+                # Filter for positions with a non-zero amount
+                active_positions = [p for p in positions if float(p.get('positionAmt', 0)) != 0]
+                if active_positions:
+                    print(f"Found {len(active_positions)} active position(s):")
+                    print(active_positions)
+                    '''
+                    for pos in active_positions[:5]:
+                        print(f"  - Symbol: {pos['symbol']}, "
+                              f"Amount: {pos['positionAmt']}, "
+                              f"Entry Price: {pos['entryPrice']}, "
+                              f"Side: {'LONG' if float(pos['positionAmt']) > 0 else 'SHORT'}")
+                    '''
+                else:
+                    print("No active positions found.")
+        except Exception as e:
+            print(f"An error occurred while getting position information: {e}")
     print("-" * 25, "\n")
