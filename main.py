@@ -5,6 +5,7 @@ import hashlib
 from urllib.parse import urlencode
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load environment variables from .env file
 load_dotenv()
@@ -91,6 +92,26 @@ class AsterdexClient:
         This is a public endpoint and does not require authentication.
         """
         return self._make_request('GET', '/fapi/v1/time')
+
+    def get_klines(self, symbol, interval, limit=500):
+        """
+        Gets Kline/candlestick data for a symbol.
+        This is a public endpoint.
+
+        Args:
+            symbol (str): The trading symbol (e.g., 'BTCUSDT').
+            interval (str): The kline interval (e.g., '1m', '5m', '1h').
+            limit (int, optional): The number of klines to retrieve. Defaults to 500.
+
+        Returns:
+            list: A list of kline/candlestick data.
+        """
+        params = {
+            'symbol': symbol,
+            'interval': interval,
+            'limit': limit,
+        }
+        return self._make_request('GET', '/fapi/v1/klines', params=params, signed=False)
 
     # ----------------------------------------------------------------
     # Signed Endpoints (require API key and secret)
@@ -189,8 +210,22 @@ if __name__ == '__main__':
         print(f"Server time: {server_time['serverTime']}")
     print("-" * 25, "\n")
 
+    # --- Example 2: Get Kline/Candlestick Data (Public GET request) ---
+    print("--- Getting Kline/Candlestick Data ---")
+    try:
+        print("Attempting to get 500 1-hour candles for BTCUSDT...")
+        klines = public_client.get_klines(symbol='BTCUSDT', interval='1h', limit=500)
+        if klines:
+            print(f"Successfully retrieved {len(klines)} klines.")
+            # Print the close price of the last kline
+            last_kline = klines[-1]
+            print(f"Last kline close time: {datetime.fromtimestamp(last_kline[6]/1000)}")
+            print(f"Last kline close price: {last_kline[4]}")
+    except Exception as e:
+        print(f"An error occurred while getting klines: {e}")
+    print("-" * 25, "\n")
 
-    # --- Example 2: Get Account Info (Signed GET request) ---
+    # --- Example 3: Get Account Info (Signed GET request) ---
     # This will fail if you don't provide valid keys in your .env file.
     print("--- Getting Account Information ---")
     if not API_KEY or not SECRET_KEY or API_KEY == "YOUR_API_KEY":
@@ -203,7 +238,7 @@ if __name__ == '__main__':
     print("-" * 25, "\n")
 
 
-    # --- Example 3: Change Leverage (Signed POST request) ---
+    # --- Example 4: Change Leverage (Signed POST request) ---
     print("--- Changing Leverage (Example) ---")
     # This is a real trading action.
     # To use it, uncomment the lines below.
@@ -224,7 +259,7 @@ if __name__ == '__main__':
     print("-" * 25, "\n")
 
 
-    # --- Example 4: Create a New Order (Signed POST request) ---
+    # --- Example 5: Create a New Order (Signed POST request) ---
     print("--- Creating a New Order (Example) ---")
     print("This is a live trading action and is commented out by default.")
     
@@ -249,7 +284,7 @@ if __name__ == '__main__':
     #         print(f"An error occurred while creating the order: {e}")
     print("-" * 25, "\n")
 
-    # --- Example 5: Get Position Information (Signed GET request) ---
+    # --- Example 6: Get Position Information (Signed GET request) ---
     print("--- Getting Position Information ---")
     if not API_KEY or not SECRET_KEY or API_KEY == "YOUR_API_KEY":
         print("Please set your API keys in the .env file to get position information.")
@@ -262,14 +297,11 @@ if __name__ == '__main__':
                 active_positions = [p for p in positions if float(p.get('positionAmt', 0)) != 0]
                 if active_positions:
                     print(f"Found {len(active_positions)} active position(s):")
-                    print(active_positions)
-                    '''
                     for pos in active_positions[:5]:
                         print(f"  - Symbol: {pos['symbol']}, "
                               f"Amount: {pos['positionAmt']}, "
                               f"Entry Price: {pos['entryPrice']}, "
                               f"Side: {'LONG' if float(pos['positionAmt']) > 0 else 'SHORT'}")
-                    '''
                 else:
                     print("No active positions found.")
         except Exception as e:
