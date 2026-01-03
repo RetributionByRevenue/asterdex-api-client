@@ -26,9 +26,9 @@ class AsterdexTrader:
             hashlib.sha256
         ).hexdigest()
 
-    def _execute_curl(self, CURL_BINARY):
+    def _execute_curl(self, curl_command):
         try:
-            result = subprocess.check_output(CURL_BINARY, shell=True, stderr=subprocess.PIPE)
+            result = subprocess.check_output(curl_command, shell=True, stderr=subprocess.PIPE)
             return json.loads(result)
         except subprocess.CalledProcessError as e:
             print(f"Error executing curl command: {e}")
@@ -53,8 +53,8 @@ class AsterdexTrader:
         signature = self._get_signature(params_to_sign)
         final_request_body = f"{urlencode(sorted(params_to_sign.items()))}&signature={signature}"
         
-        CURL_BINARY = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X POST "{full_url}" -d "{final_request_body}"'''
-        return self._execute_curl(CURL_BINARY)
+        curl_command = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X POST "{full_url}" -d "{final_request_body}"'''
+        return self._execute_curl(curl_command)
 
     def getPositionRisk(self):
         ENDPOINT = "/fapi/v2/positionRisk"
@@ -67,8 +67,8 @@ class AsterdexTrader:
         signature = self._get_signature(params_to_sign)
         final_request_url = f"{full_url}?{urlencode(sorted(params_to_sign.items()))}&signature={signature}"
 
-        CURL_BINARY = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X GET "{final_request_url}"'''
-        return self._execute_curl(CURL_BINARY)
+        curl_command = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X GET "{final_request_url}"'''
+        return self._execute_curl(curl_command)
 
     def setLeverage(self, symbol, leverage):
         ENDPOINT = "/fapi/v1/leverage"
@@ -83,8 +83,8 @@ class AsterdexTrader:
         signature = self._get_signature(params_to_sign)
         final_request_body = f"{urlencode(sorted(params_to_sign.items()))}&signature={signature}"
 
-        CURL_BINARY = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X POST "{full_url}" -d "{final_request_body}"'''
-        return self._execute_curl(CURL_BINARY)
+        curl_command = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X POST "{full_url}" -d "{final_request_body}"'''
+        return self._execute_curl(curl_command)
 
     def getAccountInfo(self):
         ENDPOINT = "/fapi/v2/account"
@@ -97,8 +97,8 @@ class AsterdexTrader:
         signature = self._get_signature(params_to_sign)
         final_request_url = f"{full_url}?{urlencode(sorted(params_to_sign.items()))}&signature={signature}"
 
-        CURL_BINARY = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X GET "{final_request_url}"'''
-        return self._execute_curl(CURL_BINARY)
+        curl_command = f'''{self.CURL_BINARY} -s -H "X-MBX-APIKEY: {self.api_key}" -X GET "{final_request_url}"'''
+        return self._execute_curl(curl_command)
 
     @staticmethod
     def getKlines(symbol, interval, limit=500):
@@ -113,9 +113,9 @@ class AsterdexTrader:
         query_string = urlencode(params)
         full_url = f"{AsterdexTrader.BASE_URL}{ENDPOINT}?{query_string}"
         
-        CURL_BINARY = f'''{AsterdexTrader.CURL_BINARY} -s -X GET "{full_url}"'''
+        curl_command = f'''{AsterdexTrader.CURL_BINARY} -s -X GET "{full_url}"'''
         try:
-            result = subprocess.check_output(CURL_BINARY, shell=True, stderr=subprocess.PIPE)
+            result = subprocess.check_output(curl_command, shell=True, stderr=subprocess.PIPE)
             return json.loads(result)
         except subprocess.CalledProcessError as e:
             print(f"Error executing curl command: {e}")
@@ -150,15 +150,17 @@ if __name__ == "__main__":
 
     # 3. Set Leverage
     print("\n--- Setting Leverage ---")
-    leverage_result = trader.setLeverage("CAKEUSDT", 1)
+    leverage_result = trader.setLeverage("CAKEUSDT", 10)
     if leverage_result:
         print(json.dumps(leverage_result, indent=4))
 
+    '''
     # 4. Place a Trade
     print("\n--- Placing a Trade ---")
     trade_result = trader.placeTrade("CAKEUSDT", "BUY", "MARKET", "6")
     if trade_result:
         print(json.dumps(trade_result, indent=4))
+    '''
 
     # 5. Get Account Info
     print("\n--- Getting Account Info ---")
