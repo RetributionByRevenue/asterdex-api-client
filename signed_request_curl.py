@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     # 3. Set Leverage
     print("\n--- Setting Leverage ---")
-    leverage_result = trader.setLeverage("CAKEUSDT", 10)
+    leverage_result = trader.setLeverage("CAKEUSDT", 1)
     if leverage_result:
         print(json.dumps(leverage_result, indent=4))
 
