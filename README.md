@@ -1,36 +1,32 @@
-# Asterdex Futures API Python Client
+# Asterdex Futures API curl Requester
 
-A simple Python client to interact with the Asterdex Futures API, as documented in `aster-finance-futures-api.md`. This script provides a basic framework for making both public and authenticated (signed) API requests.
+A simple Python script (`signed_request_curl.py`) that demonstrates how to interact with the Asterdex Futures API using `curl` commands executed from Python. It provides a basic `AsterdexTrader` class to make both public and authenticated (signed) API requests.
+
+This script is intended as a lightweight, dependency-minimal example of how to structure and sign API requests.
 
 ## Features
 
--   **Easy-to-use Class**: A `AsterdexClient` class that encapsulates API interaction logic.
+-   **`AsterdexTrader` Class**: A simple class to encapsulate API interaction logic.
 -   **Secure Key Management**: Uses a `.env` file to keep your API keys out of the source code.
 -   **HMAC-SHA256 Signing**: Automatically handles the creation of signatures for authenticated endpoints.
--   **Public Endpoints**: Examples for accessing public data:
-    -   Get Server Time (`GET /fapi/v1/time`)
-    -   Get Kline/Candlestick Data (`GET /fapi/v1/klines`)
--   **Signed Endpoints**: Examples for accessing user-specific data and performing trading actions:
-    -   Get Account Information (`GET /fapi/v2/account`)
-    -   Get Position Information (`GET /fapi/v2/positionRisk`)
-    -   Change Initial Leverage (`POST /fapi/v1/leverage`)
-    -   Create New Order (`POST /fapi/v1/order`)
+-   **Public and Signed Endpoints**: Provides methods for both public data and private account actions.
+-   **Returns Dictionaries**: All API-calling methods return the JSON response as a Python dictionary.
 
 ## Prerequisites
 
 -   Python 3.x
--   `requests` library
+-   `curl` installed on your system. Windows 10 and higher uses curl.exe binary, while unix systems default to curl. 
 -   `python-dotenv` library
 
 ## Installation & Setup
 
 1.  **Get the script:**
-    Download or clone the `asterdex_client.py` file.
+    Download or clone the `signed_request_curl.py` file.
 
 2.  **Install dependencies:**
-    Open your terminal and install the required libraries.
+    Open your terminal and install the required Python library.
     ```bash
-    pip install requests python-dotenv
+    pip install python-dotenv
     ```
 
 3.  **Configure API Keys:**
@@ -46,62 +42,73 @@ A simple Python client to interact with the Asterdex Futures API, as documented 
 
 ## Usage
 
+The `signed_request_curl.py` script contains an `AsterdexTrader` class that you can use to make API calls. The main execution block at the bottom of the file (`if __name__ == "__main__":`) shows how to instantiate the class and call its methods.
+
 To run the script and see the examples in action, execute it from your terminal:
 
 ```bash
-python asterdex_client.py
+python signed_request_curl.py
 ```
 
-By default, the script will run public requests and show examples for signed requests. The signed actions that create or change data are commented out for safety.
+By default, the script will run the `getKlines` example. You can uncomment the other examples in the `if __name__ == "__main__":` block to test them.
 
-To test the signed endpoints, you must first add your API keys to the `.env` file.
+### `AsterdexTrader` Class Methods
 
-### Example Output
+-   `getKlines(symbol, interval, limit=500)`: Fetches OHLC candlestick data. This is a public endpoint.
+-   `placeTrade(symbol, side, order_type, quantity)`: Places a new order on the exchange. (Signed)
+-   `getPositionRisk()`: Fetches your current position data. (Signed)
+-   `setLeverage(symbol, leverage)`: Sets the leverage for a given symbol. (Signed)
+-   `getAccountInfo()`: Fetches your account balance and information. (Signed)
 
-When you run the script with valid API keys, you can expect output similar to the following (values are for demonstration purposes):
+### Example: How to Use the Class
 
+```python
+import os
+from dotenv import load_dotenv
+
+# Assuming AsterdexTrader class is in the same file or imported
+# from signed_request_curl import AsterdexTrader
+
+if __name__ == "__main__":
+    load_dotenv()
+    API_KEY = os.getenv("API_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    # Create an instance of the AsterdexTrader
+    trader = AsterdexTrader(api_key=API_KEY, secret_key=SECRET_KEY)
+
+    # --- How to call each function ---
+
+    # 1. Get Klines (public endpoint)
+    print("--- Getting Klines ---")
+    klines = AsterdexTrader.getKlines("CAKEUSDT", "1m", 10)
+    if klines:
+        print(klines)
+
+    # 2. Get Position Risk
+    # print("\n--- Getting Position Risk ---")
+    # position_risk = trader.getPositionRisk()
+    # if position_risk:
+    #     print(position_risk)
+
+    # 3. Set Leverage
+    # print("\n--- Setting Leverage ---")
+    # leverage_result = trader.setLeverage("CAKEUSDT", 10)
+    # if leverage_result:
+    #     print(leverage_result)
+        
+    # 4. Place a Trade
+    # print("\n--- Placing a Trade ---")
+    # trade_result = trader.placeTrade("CAKEUSDT", "BUY", "MARKET", "6")
+    # if trade_result:
+    #     print(trade_result)
+
+    # 5. Get Account Info
+    # print("\n--- Getting Account Info ---")
+    # account_info = trader.getAccountInfo()
+    # if account_info:
+    #     print(account_info)
 ```
---- Getting Server Time ---
-Server time: 1767255000000
-------------------------- 
-
---- Getting Kline/Candlestick Data ---
-Attempting to get 500 1-hour candles for BTCUSDT...
-Successfully retrieved 500 klines.
-Last kline close time: 2026-01-01 12:00:00
-Last kline close price: 87500.50
--------------------------
-
---- Getting Account Information ---
-Successfully retrieved account information:
-{'canTrade': True, 'totalWalletBalance': '152.50', 'totalUnrealizedProfit': '2.50', 'assets': [{'asset': 'USDT', 'walletBalance': '152.50', 'unrealizedProfit': '2.50'}]}
-------------------------- 
-
---- Changing Leverage (Example) ---
-This is a real trading action.
-------------------------- 
-
---- Creating a New Order (Example) ---
-This is a live trading action and is commented out by default.
-------------------------- 
-
---- Getting Position Information ---
-Attempting to get position information for all symbols...
-Found 1 active position(s):
-  - Symbol: BTCUSDT, Amount: 0.001, Entry Price: 86000.0, Side: LONG
-------------------------- 
-```
-
-## API Functions
-
-The `AsterdexClient` class includes the following methods:
-
--   `get_server_time()`: Fetches the exchange's current server time.
--   `get_klines(...)`: Fetches OHLC candlestick data.
--   `get_account_info()`: Fetches your account balance and information. (Signed)
--   `get_position_information()`: Fetches your current position data. (Signed)
--   `change_leverage(symbol, leverage)`: Sets the leverage for a given symbol. (Signed)
--   `create_order(...)`: Places a new order on the exchange. (Signed)
 
 ## ⚠️ Disclaimer
 
