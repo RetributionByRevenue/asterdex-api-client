@@ -125,7 +125,7 @@ class AsterdexTrader:
             print(f"Error decoding JSON from response: {e}")
             return None
 
-
+'''
 if __name__ == "__main__":
     # IMPORTANT: Replace with your actual API credentials
     API_KEY = os.getenv("API_KEY")
@@ -154,16 +154,19 @@ if __name__ == "__main__":
     if leverage_result:
         print(json.dumps(leverage_result, indent=4))
 
-    '''
+    
     # 4. Place a Trade
-    print("\n--- Placing a Trade ---")
-    trade_result = trader.placeTrade("CAKEUSDT", "BUY", "MARKET", "6")
-    if trade_result:
-        print(json.dumps(trade_result, indent=4))
-    '''
+    if False:
+        print("\n--- Placing a Trade ---")
+        trade_result = trader.placeTrade("CAKEUSDT", "BUY", "MARKET", "6")
+        if trade_result:
+            print(json.dumps(trade_result, indent=4))
+    
 
     # 5. Get Account Info
     print("\n--- Getting Account Info ---")
     account_info = trader.getAccountInfo()
     if account_info:
         print(json.dumps(account_info, indent=4))
+    '''
+
